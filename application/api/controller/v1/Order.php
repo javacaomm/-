@@ -9,9 +9,13 @@
 namespace app\api\controller\v1;
 
 
+use app\api\controller\BaseController;
+use app\api\validate\OrderPlace;
 use think\Controller;
+use app\api\service\Token as TokenService;
+use app\api\service\Order as OrderModel;
 
-class Order extends Controller
+class Order extends BaseController
 {
     //用户在选择好商品之后，向API接口提交所选商品的信息
     //API接口通过提交的信息查询商品的库存量
@@ -22,4 +26,21 @@ class Order extends Controller
     //微信返回支付结果（因为微信是异步处理，不能实时返回）
     //完成支付之后再次检查库存量，防止微信的bug
     //成功：进行库存量的删减
+
+    protected $beforeActionList = [
+        'checkExclusiveScope' => ['only' => 'placeOrder'],
+    ];
+    
+    public function placeOrder(){
+        (new OrderPlace())->goCheck();
+
+        //获取products数组,所以必须加/a
+        $products=input('post.products/a');
+        $uid=TokenService::getCurrentUid();
+//        如果不是静态方法，这里必须使用实例化才能使用模型的方法
+//        $orderOk=OrderModel::place($products,$uid);
+        $order=new OrderModel();
+        $status=$order->place($products,$uid);
+        return $status;
+    }
 }

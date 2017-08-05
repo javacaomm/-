@@ -9,10 +9,13 @@
 namespace app\api\service;
 
 
+use app\lib\enum\ScopeEnum;
+use app\lib\exception\ScopeException;
 use app\lib\exception\TokenException;
 use think\Cache;
 use think\Exception;
 use think\Request;
+use app\api\service\Token as TokenService;
 
 class Token
 {
@@ -50,5 +53,35 @@ class Token
         $uid=self::getCurrentTokenVar('uid');
         return $uid;
     }
-    
+
+    //用户和CMS管理员都可以访问接口，只需要scope>=16即可
+    public static function needPrimaryScope(){
+        $scope = self::getCurrentTokenVar('scope');
+        if ($scope) {
+            if ($scope >= ScopeEnum::User) {
+//            $this->createOrUpdateAddress();直接返回正确即可
+                return true;
+            } else {
+                throw new ScopeException();
+            }
+        } else {
+            throw new TokenException();
+        }
+    }
+
+    //只有用户可以访问的接口，例如防止管理员给用户下单，需要scope=16即可
+    public static function needExclusiveScope(){
+        $scope = TokenService::getCurrentTokenVar('scope');
+        if ($scope) {
+            if ($scope == ScopeEnum::User) {
+//            $this->createOrUpdateAddress();直接返回正确即可
+                return true;
+            } else {
+                throw new ScopeException();
+            }
+        } else {
+            throw new TokenException();
+        }
+    }
+
 }
