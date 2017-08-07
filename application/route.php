@@ -50,6 +50,8 @@ Route::post('api/:version/order', 'api/:version.Order/placeOrder');
 
 Route::post('api/:version/pay/pre_order', 'api/:version.Pay/getPreOrder');
 
+Route::post('api/:version/pay/notify', 'api/:version.Pay/receiveNotify');
+
 //Route::rule('路由表达式','路由地址(模块名/控制器名/方法名)','请求类型','路由参数（数组）','变量规则（数组）');
 //Route::rule('hello','sample/test/hello','GET',['https'=>false]);
 //Route::rule('hello','sample/test/hello','GET|POST',['https'=>false]);
