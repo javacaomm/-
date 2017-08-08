@@ -7,5 +7,6 @@
  */
 
 return[
-    'token_salt'=>'Hydj5783hupUyG3s'
+    'token_salt'=>'Hydj5783hupUyG3s',
+    'pay_back_url'=>'http://z.cn/api/v1/pay/notify'
 ];
