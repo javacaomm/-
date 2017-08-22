@@ -94,4 +94,14 @@ class Token
         }
         return false;
     }
+
+    public static function verifyToken($token){
+//        微信过来查看token是否存在，就是看是否失效了
+        $exist=Cache::get($token);
+        if($exist){
+            return true;
+        }else{
+            return false;
+        }
+    }
 }

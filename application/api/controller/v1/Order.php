@@ -10,10 +10,15 @@ namespace app\api\controller\v1;
 
 
 use app\api\controller\BaseController;
-use app\api\validate\OrderPlace;
-use think\Controller;
+use app\api\model\Order as OrderModel;
+use app\api\service\Token;
 use app\api\service\Token as TokenService;
-use app\api\service\Order as OrderModel;
+use app\api\validate\IDMustBePositiveInt;
+use app\api\validate\OrderPlace;
+use app\api\validate\PagingParameter;
+use app\api\service\Order as OrderService;
+use app\lib\exception\OrderException;
+use think\Controller;
 
 class Order extends BaseController
 {
@@ -30,8 +35,40 @@ class Order extends BaseController
 
     protected $beforeActionList = [
         'checkExclusiveScope' => ['only' => 'placeOrder'],
+        //查看订单消息应该是用户和管理员都可以看到的
+        'checkPrimaryScope'=>['only'=>'getDetail,getSummaryByUser']
     ];
-    
+
+    //分页查询和获取历史订单消息
+    public function getSummaryByUser($page=1,$size=15){
+        (new PagingParameter())->goCheck();
+        $uid=Token::getCurrentUid();
+        $pagingOrders=OrderModel::getSummaryByUser($uid,$page,$size);
+        //对象判空的话要用->isEmpty()
+        if($pagingOrders->isEmpty())
+        {
+            return[
+                'data'=>[],
+                'current_page'=>$pagingOrders->getCurrentPage()
+            ];
+        }
+        //这里也可以使用hidden方法单独隐藏字段
+        $data=$pagingOrders->hidden(['snap_items','snap_address','prepay_id'])->toArray();
+        return[
+            'data'=>$data,
+            'current_page'=>$pagingOrders->getCurrentPage()
+        ];
+    }
+
+    public function getDetail($id){
+        (new IDMustBePositiveInt())->goCheck();
+        $orderDetail=OrderModel::get($id);
+        if(!$orderDetail){
+            throw new OrderException();
+        }
+        return $orderDetail->hidden(['prepay_id']);
+    }
+
     public function placeOrder(){
         (new OrderPlace())->goCheck();
 
@@ -40,7 +77,7 @@ class Order extends BaseController
         $uid=TokenService::getCurrentUid();
 //        如果不是静态方法，这里必须使用实例化才能使用模型的方法
 //        $orderOk=OrderModel::place($products,$uid);
-        $order=new OrderModel();
+        $order=new OrderService();
         $status=$order->place($products,$uid);
         return $status;
     }

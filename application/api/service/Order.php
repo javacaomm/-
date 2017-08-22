@@ -178,7 +178,7 @@ class Order
                 $orderStatus['pass'] = false;
             }
             $orderStatus['orderPrice'] += $pStatus['totalPrice'];
-            $orderStatus['totalCount'] += $pStatus['count'];
+            $orderStatus['totalCount'] += $pStatus['counts'];
             array_push($orderStatus['pStatusArray'], $pStatus);
         }
         return $orderStatus;
@@ -190,12 +190,15 @@ class Order
     {
         $pIndex = -1;
 
+        //这里的字段根据前端重新定义,加入了单价price，主图字段等
         $pStatus = [
             'id' => null,
             'haveStock' => false,
-            'count' => 0,
+            'counts' => 0,
+            'price'=>0,
             'name' => '',
-            'totalPrice' => 0
+            'totalPrice' => 0,
+            'main_img_url'=>null
         ];
         for ($i = 0; $i < count($products); $i++) {
             if ($oPid == $products[$i]['id']) {
@@ -210,8 +213,10 @@ class Order
         } else {
             $product = $products[$pIndex];
             $pStatus['id'] = $product['id'];
-            $pStatus['count'] = $oCount;
+            $pStatus['counts'] = $oCount;
+            $pStatus['price'] = $product['price'];
             $pStatus['name'] = $product['name'];
+            $pStatus['main_img_url'] = $product['main_img_url'];
             $pStatus['totalPrice'] = $product['price'] * $oCount;
             if ($product['stock'] - $oCount >= 0) {
                 $pStatus['haveStock'] = true;

@@ -90,7 +90,6 @@ class UserToken extends Token
         $cachedValue = $wxResult;
         $cachedValue['uid'] = $uid;
         //scope=16代表App用户的权限数值
-        $cachedValue['scope'] = 15;
         $cachedValue['scope'] = ScopeEnum::User;
         //scope=32代表CMS（管理员）用户的权限数值
         return $cachedValue;
